@@ -1,0 +1,26 @@
+{
+  "name": "aurora.js",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "aSwitch",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/node-fetch": "^2.6.12",
+    "@types/ws": "^8.5.13",
+    "typescript": "^5.7.2"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "ws": "^8.18.0"
+  }
+}
