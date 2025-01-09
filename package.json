@@ -1,5 +1,5 @@
 {
-  "name": "aurora.js",
+  "name": "@guilded.top/aurora.js",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
