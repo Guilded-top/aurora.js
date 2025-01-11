@@ -1,6 +1,9 @@
 import { WebSocket } from "ws";
 import Events from "./types/Events";
 import Message from "./types/server/Message";
+import Server from "./types/server/Server";
+import Member from "./types/server/Member";
+import { fetchServer, fetchUser } from "./utils/api";
 
 type botData = { 
     token: string,
@@ -44,6 +47,26 @@ export default class Client {
             }
 
             switch (eventType) {
+                case Events.BotServerMembershipCreated: {
+                    const server = new Server(eventData, this);
+                    const { createdBy: createdById } = eventData;
+
+                    this.events.get(Events.BotServerMembershipCreated)?.forEach((callback) => {
+                        callback(server, createdById);
+                    });
+                    break;
+                }
+
+                case Events.BotServerMembershipDeleted: {
+                    const server = new Server(eventData, this);
+                    const { deletedBy: deletedById } = eventData;
+
+                    this.events.get(Events.BotServerMembershipDeleted)?.forEach((callback) => {
+                        callback(server, deletedById);
+                    });
+                    break;
+                }
+
                 case Events.ChatMessageCreated: {
                     const message = new Message(eventData, this);
                     this.events.get(Events.ChatMessageCreated)?.forEach((callback) => {
@@ -68,15 +91,32 @@ export default class Client {
                     break;
                 }
 
+                case Events.ServerMemberJoined: {
+                    const member = new Member(eventData, this);
+                    const server = fetchServer(eventData.serverId, this);
+
+                    this.events.get(Events.ServerMemberJoined)?.forEach((callback) => {
+                        callback(member, server);
+                    });
+                    break;
+                }
+
+                case Events.ServerMemberRemoved: {
+                    const { serverId, userId, isKick, isBan } = eventData;
+                    const server = fetchServer(serverId, this);
+                    const user = fetchUser(userId);
+                    
+                    this.events.get(Events.ServerMemberRemoved)?.forEach((callback) => {
+                        callback(user, server);
+                    });
+                }
+
                 default: {
                     console.log(`Unknown event: ${eventType}`);
                     console.log(eventData);
                     break;
                 }
             }
-
-            
-
         });
     }
 
