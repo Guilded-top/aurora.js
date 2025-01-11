@@ -3,6 +3,8 @@ import Client from "../../Client";
 import ChatEmbed from "../ChatEmbed";
 import User from "../user/User";
 import ApiRequestError from "../errors/ApiRequestError";
+import { fetchServer, fetchServerMember } from "../../utils/api";
+import Member from "./Member";
 
 type rawData = {
     serverId: string;
@@ -37,8 +39,8 @@ type ReplyContent = {
 export default class Message {
 
     client: Client;
-    _server: Server | undefined;
-    _author: User | undefined;
+    _server: Server | null | undefined;
+    _author: Member | undefined;
     
     id: string;
     channelId: string;
@@ -147,29 +149,19 @@ export default class Message {
         if (this._server) {
             return Promise.resolve(this._server);
         }
-
-        return fetch(`https://www.guilded.gg/api/v1/servers/${this.rawData.serverId}`, {
-            headers: {
-                Authorization: `Bearer ${this.client.data.token}`
-            }
-        }).then((request) => request.json()).then((jsonData) => {
-            this._server = new Server(jsonData, this.client);
-            return Promise.resolve(this._server);
-        }).catch(() => {
-            return Promise.resolve(null);
-        });    
+        return fetchServer(this.rawData.serverId, this.client).then((server) => {
+            this._server = server;
+            return Promise.resolve(server);
+        });  
     }
 
-    get author(): Promise<User | null> {
+    get author(): Promise<Member | null> {
         if (this._author) {
             return Promise.resolve(this._author);
         }
-
-        return fetch(`https://www.guilded.gg/api/users/${this.rawData.createdBy}`).then((request) => request.json()).then((jsonData) => {
-            this._author = new User(jsonData);
-            return Promise.resolve(this._author);
-        }).catch(() => {
-            return Promise.resolve(null);
+        return fetchServerMember(this.rawData.serverId, this.rawData.createdBy, this.client).then((member) => {
+            this._author = member;
+            return Promise.resolve(member);
         });
     }
 
