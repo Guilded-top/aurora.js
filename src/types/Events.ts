@@ -8,6 +8,9 @@ enum Events {
     ChatMessageUpdated = "ChatMessageUpdated",
     ServerMemberJoined = "ServerMemberJoined",
     ServerMemberRemoved = "ServerMemberRemoved",
+    ServerChannelCreated = "ServerChannelCreated",
+    ServerChannelUpdated = "ServerChannelUpdated",
+    ServerChannelDeleted = "ServerChannelDeleted",
 }
 
 

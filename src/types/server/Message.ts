@@ -1,7 +1,6 @@
 import Server from "./Server";
 import Client from "../../Client";
 import ChatEmbed from "../ChatEmbed";
-import User from "../user/User";
 import ApiRequestError from "../errors/ApiRequestError";
 import { fetchServer, fetchServerMember } from "../../utils/api";
 import Member from "./Member";
