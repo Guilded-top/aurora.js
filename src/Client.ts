@@ -4,6 +4,7 @@ import Message from "./types/server/Message";
 import Server from "./types/server/Server";
 import Member from "./types/server/Member";
 import { fetchServer, fetchUser } from "./utils/api";
+import Channel from "./types/server/Channel";
 
 type botData = { 
     token: string,
@@ -107,8 +108,33 @@ export default class Client {
                     const user = fetchUser(userId);
                     
                     this.events.get(Events.ServerMemberRemoved)?.forEach((callback) => {
-                        callback(user, server);
+                        callback(user, server, isKick, isBan);
                     });
+                    break;
+                }
+
+                case Events.ServerChannelCreated: {
+                    const channel = new Channel(eventData, this);
+                    this.events.get(Events.ServerChannelCreated)?.forEach((callback) => {
+                        callback(channel);
+                    });
+                    break;
+                }
+
+                case Events.ServerChannelUpdated: {
+                    const channel = new Channel(eventData, this);
+                    this.events.get(Events.ServerChannelUpdated)?.forEach((callback) => {
+                        callback(channel);
+                    });
+                    break;
+                }
+
+                case Events.ServerChannelDeleted: {
+                    const channel = new Channel(eventData, this);
+                    this.events.get(Events.ServerChannelDeleted)?.forEach((callback) => {
+                        callback(channel);
+                    });
+                    break;
                 }
 
                 default: {
