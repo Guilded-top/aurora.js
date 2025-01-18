@@ -27,14 +27,14 @@ type rawData = {
     updatedAt: Date | undefined;
 }
 
-type ReplyContent = {
+type ReplyContent = Partial<{
     isPrivate: boolean | undefined;
     isSilent: boolean | undefined;
     replyMessageIds: string[] | undefined;
     content: string | undefined;
     embeds: ChatEmbed[] | undefined;
     hiddenLinkPreviewUrls: string[] | undefined;
-}
+}>
 
 export default class Message {
 
