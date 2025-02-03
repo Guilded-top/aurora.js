@@ -2,7 +2,7 @@ import Server from "./Server";
 import Client from "../../Client";
 import ChatEmbed from "../ChatEmbed";
 import ApiRequestError from "../errors/ApiRequestError";
-import { fetchServer, fetchServerMember } from "../../utils/api";
+import { fetchServerMember } from "../../utils/api";
 import Member from "./Member";
 
 type rawData = {
@@ -148,7 +148,7 @@ export default class Message {
         if (this._server) {
             return Promise.resolve(this._server);
         }
-        return fetchServer(this.rawData.serverId, this.client).then((server) => {
+        return this.client.servers.fetch(this.rawData.serverId).then((server) => {
             this._server = server;
             return Promise.resolve(server);
         });  

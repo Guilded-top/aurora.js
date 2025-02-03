@@ -11,15 +11,9 @@ const headers = (client: Client) => {
     } as HeadersInit;
 };
 
-export const fetchServer = (serverId: string, client: Client): Promise<Server | null> => 
-    fetch(`${base}/servers/${serverId}`, { headers: headers(client) })
-    .then((res) => res.json())
-    .then((json) => {
-        return Promise.resolve(new Server(json, client));
-    })
-    .catch(() => {
-        return Promise.resolve(null);
-    });
+export const request = (endpoint: string, client: Client) => 
+    fetch(base + endpoint, { headers: headers(client) })
+    .then((res) => res.json());
 
 export const fetchServerMember = (serverId: string, userId: string, client: Client) =>
     fetch(`${base}/servers/${serverId}/members/${userId}`, { headers: headers(client) })

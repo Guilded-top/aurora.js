@@ -3,16 +3,16 @@ import Events from "./types/Events";
 import Message from "./types/server/Message";
 import Server from "./types/server/Server";
 import Member from "./types/server/Member";
-import { fetchServer, fetchUser } from "./utils/api";
+import { fetchUser } from "./utils/api";
 import Channel from "./types/server/Channel";
 import { version } from "../package.json";
+import ServerManager from "./managers/server";
 
 type botData = { 
     token: string;
 }
 
 export default class Client {
-    
     data: botData;
     socket: WebSocket | null;
     events: Map<string, Function[]>;
@@ -20,11 +20,14 @@ export default class Client {
 
     botId: string | undefined;
 
+    servers: ServerManager;
 
     constructor(data: botData) {
         this.data = data;
         this.socket = null;
         this.events = new Map();
+
+        this.servers = new ServerManager(this);
     }
 
     login() {
@@ -95,7 +98,7 @@ export default class Client {
 
                 case Events.ServerMemberJoined: {
                     const member = new Member(eventData, this);
-                    const server = fetchServer(eventData.serverId, this);
+                    const server = this.servers.fetch(eventData.serverId);
 
                     this.events.get(Events.ServerMemberJoined)?.forEach((callback) => {
                         callback(member, server);
@@ -105,7 +108,7 @@ export default class Client {
 
                 case Events.ServerMemberRemoved: {
                     const { serverId, userId, isKick, isBan } = eventData;
-                    const server = fetchServer(serverId, this);
+                    const server = this.servers.fetch(eventData.serverId);
                     const user = fetchUser(userId);
                     
                     this.events.get(Events.ServerMemberRemoved)?.forEach((callback) => {
