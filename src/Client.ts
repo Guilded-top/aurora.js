@@ -5,9 +5,10 @@ import Server from "./types/server/Server";
 import Member from "./types/server/Member";
 import { fetchServer, fetchUser } from "./utils/api";
 import Channel from "./types/server/Channel";
+import { version } from "../package.json";
 
 type botData = { 
-    token: string,
+    token: string;
 }
 
 export default class Client {
@@ -30,8 +31,8 @@ export default class Client {
         this.socket = new WebSocket("wss://www.guilded.gg/websocket/v1", {
             headers: {
                 "authorization": `Bearer ${this.data.token}`,
-                "user-agent": "MelonApi"
-            }       
+                "User-Agent": `@guilded.top/aurora.js@${version}`,
+            },
         });
 
         this.socket.on("message", (data) => {
