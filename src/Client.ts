@@ -6,7 +6,8 @@ import Member from "./types/server/Member";
 import { fetchUser } from "./utils/api";
 import Channel from "./types/server/Channel";
 import { version } from "../package.json";
-import ServerManager from "./managers/server";
+import ServersManager from "./managers/servers";
+import ChannelsManager from "./managers/channels";
 
 type botData = { 
     token: string;
@@ -20,14 +21,16 @@ export default class Client {
 
     botId: string | undefined;
 
-    servers: ServerManager;
+    servers: ServersManager;
+    channels: ChannelsManager;
 
     constructor(data: botData) {
         this.data = data;
         this.socket = null;
         this.events = new Map();
 
-        this.servers = new ServerManager(this);
+        this.servers = new ServersManager(this);
+        this.channels = new ChannelsManager(this);
     }
 
     login() {

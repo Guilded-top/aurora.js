@@ -39,6 +39,8 @@ export default class Channel {
         this.archivedBy = data.channel.archivedBy;
         this.archivedAt = new Date(data.channel.archivedAt);
         this.priority = data.channel.priority;
+
+        this.client.channels.cache.set(this.id, this);
     };
 };
 
