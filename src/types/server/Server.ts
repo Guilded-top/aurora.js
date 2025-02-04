@@ -41,6 +41,7 @@ export default class Server {
         this.defaultChannelId = data.server.defaultChannelId;
         this.isVerified = data.server.isVerified ? data.isVerified : false;
 
+        this.client.servers.cache.set(this.id, this);
     }
 
     

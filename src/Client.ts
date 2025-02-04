@@ -3,15 +3,18 @@ import Events from "./types/Events";
 import Message from "./types/server/Message";
 import Server from "./types/server/Server";
 import Member from "./types/server/Member";
-import { fetchServer, fetchUser } from "./utils/api";
+import { fetchUser } from "./utils/api";
 import Channel from "./types/server/Channel";
+import { version } from "../package.json";
+import ServersManager from "./managers/servers";
+import ChannelsManager from "./managers/channels";
+import MembersManager from "./managers/members";
 
 type botData = { 
-    token: string,
+    token: string;
 }
 
 export default class Client {
-    
     data: botData;
     socket: WebSocket | null;
     events: Map<string, Function[]>;
@@ -19,19 +22,26 @@ export default class Client {
 
     botId: string | undefined;
 
+    servers: ServersManager;
+    channels: ChannelsManager;
+    members: MembersManager;
 
     constructor(data: botData) {
         this.data = data;
         this.socket = null;
         this.events = new Map();
+
+        this.servers = new ServersManager(this);
+        this.channels = new ChannelsManager(this);
+        this.members = new MembersManager(this);
     }
 
     login() {
         this.socket = new WebSocket("wss://www.guilded.gg/websocket/v1", {
             headers: {
                 "authorization": `Bearer ${this.data.token}`,
-                "user-agent": "MelonApi"
-            }       
+                "User-Agent": `@guilded.top/aurora.js@${version}`,
+            },
         });
 
         this.socket.on("message", (data) => {
@@ -63,6 +73,7 @@ export default class Client {
                     const { deletedBy: deletedById } = eventData;
 
                     this.events.get(Events.BotServerMembershipDeleted)?.forEach((callback) => {
+                        if (this.servers.cache.get(server.id)) this.servers.cache.delete(server.id);
                         callback(server, deletedById);
                     });
                     break;
@@ -93,8 +104,8 @@ export default class Client {
                 }
 
                 case Events.ServerMemberJoined: {
-                    const member = new Member(eventData, this);
-                    const server = fetchServer(eventData.serverId, this);
+                    const member = new Member(eventData, eventData.serverId, this);
+                    const server = this.servers.fetch(eventData.serverId);
 
                     this.events.get(Events.ServerMemberJoined)?.forEach((callback) => {
                         callback(member, server);
@@ -104,10 +115,12 @@ export default class Client {
 
                 case Events.ServerMemberRemoved: {
                     const { serverId, userId, isKick, isBan } = eventData;
-                    const server = fetchServer(serverId, this);
+                    const server = this.servers.fetch(eventData.serverId);
                     const user = fetchUser(userId);
                     
                     this.events.get(Events.ServerMemberRemoved)?.forEach((callback) => {
+                        if (this.members.cache.get({ serverId, userId })) 
+                            this.members.cache.delete({ serverId, userId});
                         callback(user, server, isKick, isBan);
                     });
                     break;
@@ -132,6 +145,8 @@ export default class Client {
                 case Events.ServerChannelDeleted: {
                     const channel = new Channel(eventData, this);
                     this.events.get(Events.ServerChannelDeleted)?.forEach((callback) => {
+                        if (this.channels.cache.get(channel.id))
+                            this.channels.cache.delete(channel.id);
                         callback(channel);
                     });
                     break;

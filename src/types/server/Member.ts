@@ -12,7 +12,7 @@ export default class Member {
     nickname: string | undefined;
     isOwner: boolean | undefined;
     
-    constructor(data: any, client: Client) {
+    constructor(data: any, serverId: string, client: Client) {
         this.client = client;
 
         this.user = data.member.user;
@@ -20,5 +20,7 @@ export default class Member {
         this.jointAt = new Date(data.member.joinedAt);
         this.nickname = data.member.nickname;
         this.isOwner = data.member.isOwner;
+
+        this.client.members.cache.set({ serverId, userId: this.user.id }, this);
     };
 };
