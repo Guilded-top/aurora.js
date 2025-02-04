@@ -8,6 +8,7 @@ import Channel from "./types/server/Channel";
 import { version } from "../package.json";
 import ServersManager from "./managers/servers";
 import ChannelsManager from "./managers/channels";
+import MembersManager from "./managers/members";
 
 type botData = { 
     token: string;
@@ -23,6 +24,7 @@ export default class Client {
 
     servers: ServersManager;
     channels: ChannelsManager;
+    members: MembersManager;
 
     constructor(data: botData) {
         this.data = data;
@@ -31,6 +33,7 @@ export default class Client {
 
         this.servers = new ServersManager(this);
         this.channels = new ChannelsManager(this);
+        this.members = new MembersManager(this);
     }
 
     login() {
@@ -70,6 +73,7 @@ export default class Client {
                     const { deletedBy: deletedById } = eventData;
 
                     this.events.get(Events.BotServerMembershipDeleted)?.forEach((callback) => {
+                        if (this.servers.cache.get(server.id)) this.servers.cache.delete(server.id);
                         callback(server, deletedById);
                     });
                     break;
@@ -100,7 +104,7 @@ export default class Client {
                 }
 
                 case Events.ServerMemberJoined: {
-                    const member = new Member(eventData, this);
+                    const member = new Member(eventData, eventData.serverId, this);
                     const server = this.servers.fetch(eventData.serverId);
 
                     this.events.get(Events.ServerMemberJoined)?.forEach((callback) => {
@@ -115,6 +119,8 @@ export default class Client {
                     const user = fetchUser(userId);
                     
                     this.events.get(Events.ServerMemberRemoved)?.forEach((callback) => {
+                        if (this.members.cache.get({ serverId, userId })) 
+                            this.members.cache.delete({ serverId, userId});
                         callback(user, server, isKick, isBan);
                     });
                     break;
@@ -139,6 +145,8 @@ export default class Client {
                 case Events.ServerChannelDeleted: {
                     const channel = new Channel(eventData, this);
                     this.events.get(Events.ServerChannelDeleted)?.forEach((callback) => {
+                        if (this.channels.cache.get(channel.id))
+                            this.channels.cache.delete(channel.id);
                         callback(channel);
                     });
                     break;
