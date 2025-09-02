@@ -1,30 +1,55 @@
-import Client from "../Client";
-import Member from "../types/server/Member";
-import Server from "../types/server/Server";
-import User from "../types/user/User";
+import { Client } from "../structures/Client";
+import { name, version } from "../../package.json";
 
-const base = `https://www.guilded.gg/api/v1`
+const base = "https://www.guilded.gg/api/v1";
 
-const headers = (client: Client) => {
-    return {
-        "Authorization": `Bearer ${client.data.token}`,
-    } as HeadersInit;
+/** https://www.guilded.gg/docs/api/http_methods */
+enum Method {
+    Get = "GET",
+    Head = "HEAD",
+    Post = "POST",
+    Put = "PUT",
+    Patch = "PATCH",
+    Delete = "DELETE",
 };
 
-export const request = (endpoint: string, client: Client) => 
-    fetch(base + endpoint, { headers: headers(client) })
-    .then((res) => res.json());
+export class API {
+    constructor(public client: Client) {};
 
-export const fetchServerMember = (serverId: string, userId: string, client: Client) =>
-    fetch(`${base}/servers/${serverId}/members/${userId}`, { headers: headers(client) })
-    .then((res) => res.json())
-    .then((json) => {
-        return new Member(json, client);
-    });
+    async get<T>(path: string): Promise<T> {
+        return this.request<T>(path, Method.Get);
+    };
 
-export const fetchUser = (userId: string) => 
-    fetch(`https://www.guilded.gg/api/users/${userId}`)
-    .then((res) => res.json())
-    .then((json) => {
-        return new User(json);
-    });
+    async post<T, D = unknown>(path: string, body?: D): Promise<T> {
+        return this.request<T>(path, Method.Post, body);
+    };
+
+    async put<T, D>(path: string, body?: D): Promise<T> {
+        return this.request<T>(path, Method.Put, body);
+    };
+
+    async patch<T, D>(path: string, body: D): Promise<T> {
+        return this.request<T>(path, Method.Patch, body);
+    };
+
+    async delete<T = unknown>(path: string): Promise<T | null> {
+        return this.request<T>(path, Method.Delete);
+    };
+
+    async request<T, D = unknown>(path: string, method: Method, body?: D): Promise<T> {
+        console.log(method, path);
+        const response = await fetch(base + path, {
+            method,
+            headers: {
+                Authorization: `Bearer ${this.client.data.token}`,
+                "User-Agent": `${name}@${version}`,
+                "Content-Type": "application/json",
+            },
+            body: body && method !== Method.Get ? JSON.stringify(body) : undefined,
+        });
+        if (!response.ok) throw new Error("Response was not OK.");
+        if (response.status === 204) return null as T;
+
+        return response.json() as Promise<T>;
+    };
+};

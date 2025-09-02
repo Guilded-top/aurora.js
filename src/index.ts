@@ -1,9 +1,19 @@
-import Events from "./types/Events";
-import Client from "./Client";
-import Message from "./types/server/Message";
-import Server from "./types/server/Server";
-import User from "./types/user/User";
-import ChatEmbed from "./types/ChatEmbed";
-import EmbedBuilder from "./utils/EmbedBuilder";
+import { Embed } from "./structures/message/Embed";
+import { Message } from "./structures/message/Message";
+import { Channel } from "./structures/server/Channel";
+import { Member } from "./structures/server/Member";
+import { Server } from "./structures/server/Server";
+import { Client } from "./structures/Client";
+import { User } from "./structures/User";
 
-export { Events, Client, Message, Server, User, ChatEmbed, EmbedBuilder };
+export {
+    Embed,
+    Message,
+    Channel,
+    Member,
+    Server,
+    Client,
+    User
+};
+export * from "./typings";
+export default Client;
